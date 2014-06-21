@@ -5,9 +5,15 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /css
+  static_dir: css
+
+- url: /img
+  static_dir: img
+
 - url: /.*
-<<<<<<< HEAD
   script: cal.app
-=======
-  script: calendar.app
->>>>>>> 8c59368a0976cc24f3975a8ff0d9dfdeebd28a9c
+
+libraries:
+- name: jinja2
+  version: latest
