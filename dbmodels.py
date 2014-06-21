@@ -1,11 +1,20 @@
 ﻿#!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
+#App engine modules 
 from google.appengine.ext import db
+
+#My modules
+#from utilities import * #padaryti import utilities as ut
 
 class User(db.Model):
     username = db.StringProperty(required = True)
     password = db.StringProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
+
+    @classmethod
+    def by_username(cls, username):
+        user = User.all().filter('username =', username).get() #get() gražina tik viena objektą, ne sarašąfeatures every image gallery
+        return user
 
 """
 class User(db.Model):
