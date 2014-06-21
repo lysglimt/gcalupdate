@@ -1,0 +1,13 @@
+application: calendar-script
+version: 2
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /.*
+<<<<<<< HEAD
+  script: cal.app
+=======
+  script: calendar.app
+>>>>>>> 8c59368a0976cc24f3975a8ff0d9dfdeebd28a9c
