@@ -43,7 +43,10 @@ class BaseHandler(webapp2.RequestHandler):
         
     def read_secure_cookie(self, name):
         cookie_val = self.request.cookies.get(name)
-        return cookie_val and check_secure_val(cookie_val) 
+        return cookie_val and check_secure_val(cookie_val)
+
+    def logout(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=')
 
 class Login(BaseHandler):
     def get(self):
@@ -78,8 +81,20 @@ class Login(BaseHandler):
 
 class Main(BaseHandler):
     def get(self):
+        if not self.user:
+            self.redirect('/')
+        template_values = {}
         self.render('main.html', **template_values)
+
+
+class Logout(BaseHandler):
+    def get(self):
+        self.logout()
+        self.redirect('/')
+
+
 
 app = webapp2.WSGIApplication([('/', Login),
                                ('/main', Main),
+                               ('/logout', Logout),
                                ], debug=True)
