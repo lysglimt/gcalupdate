@@ -39,7 +39,11 @@ class BaseHandler(webapp2.RequestHandler):
 
     def set_secure_cookie(self, name, val):
         cookie_val = make_secure_val(val)
-        self.response.headers.add_header('Set-Cookie', '%s=%s' % (name, cookie_val))    
+        self.response.headers.add_header('Set-Cookie', '%s=%s' % (name, cookie_val))   
+        
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val) 
 
 class Login(BaseHandler):
     def get(self):
