@@ -27,8 +27,23 @@ def render_str(template, **params):
     t = jinja_env.get_template(template) 
     return t.render(params)
 
+client_id=''
+client_secret=''
+if ClientSecrets.all().count() != 0:
+    client_details = ClientSecrets.all().get()
+    client_id = client_details.client_id
+    client_secret = client_details.client_secret
 
-
+http = httplib2.Http(memcache)
+service = discovery.build('calendar', 'v3', http=http)
+decorator = appengine.OAuth2Decorator(
+    client_id=client_id,
+    client_secret=client_secret,
+    scope=[
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.readonly',
+    ])
+logging.warning(dir(decorator.set_credentials))
 
 #REQUEST HANDLERS
 class BaseHandler(webapp2.RequestHandler):
@@ -87,6 +102,7 @@ class Login(BaseHandler):
         return cookie_val and check_secure_val(cookie_val)
 
 class Main(BaseHandler):
+    @decorator.oauth_aware
     def get(self):
         if not self.user:
             self.redirect('/')
@@ -111,22 +127,29 @@ class ClientSecret(BaseHandler):
         ""
         client_id = self.request.get('client_id')
         client_secret = self.request.get('client_secret')
-        logging.info(client_id, client_secret)
+
         secret = ClientSecrets(client_id = client_id, client_secret = client_secret)
         secret.put()
+        decorator._client_id = client_id
+        decorator._client_secret = client_secret
         self.redirect('/grant_permission')
 
 
 class GrantPermission(BaseHandler):
+    @decorator.oauth_aware
     def get(self):
         ""
+        template_values = {
+            'url': decorator.authorize_url(),
+            'has_credentials': decorator.has_credentials()
+            }
+        self.render('grant_permission.html', **template_values)
 
-    def post(self):
-        ""
 
 app = webapp2.WSGIApplication([('/', Login),
                                ('/main', Main),
                                ('/logout', Logout),
                                ('/enter_client_secret', ClientSecret),
                                ('/grant_permission', GrantPermission),
+                               (decorator.callback_path, decorator.callback_handler()),
                                ], debug=True)
