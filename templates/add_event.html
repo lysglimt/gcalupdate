@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <div>
+        Enter New Event
+    </div>
+    <form method="post">
+        <div>
+            <div>
+            <div class="label">
+                Date
+            </div>
+            <div>
+                <input type="date" name="date"></input>
+            </div>
+        </div>
+            <div>
+                <div class="label">
+                    Summary
+                </div>
+                <div>
+                    <input type="text" name="summary"></input>
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    Description
+                </div>
+                <div>
+                    <textarea name="description" cols="25" rows="7"></textarea> 
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    Location
+                </div>
+                <div>
+                    <input type="text" name="location"></input>
+                </div>
+            </div>
+            <div>
+                {{error}}
+            </div>
+            <div>
+                <div>
+                    <input type="submit" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

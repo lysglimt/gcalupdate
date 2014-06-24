@@ -45,6 +45,18 @@ decorator = appengine.OAuth2Decorator(
     ])
 logging.warning(dir(decorator.set_credentials))
 
+
+
+class CalendarEvent:
+    ""
+    date = ''
+    dateTime = ''
+    Time = ''
+    endTimeUnspecified = True
+    summary = ''
+    description = ''
+
+
 #REQUEST HANDLERS
 class BaseHandler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
@@ -97,7 +109,7 @@ class Login(BaseHandler):
         cookie_val = make_secure_val(val)
         self.response.headers.add_header('Set-Cookie', '%s=%s' % (name, cookie_val))
 
-    def read_secure_cookie(self, name):                         #patikrina ar geras cookie
+    def read_secure_cookie(self, name):                         #checks validity of cookie
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
@@ -108,7 +120,23 @@ class Main(BaseHandler):
             self.redirect('/')
         if ClientSecrets.all().count() == 0:
             self.redirect('/enter_client_secret')
-        template_values = {}
+
+        all_events = []
+        page_token = None
+        while True:
+            events = service.events().list(calendarId='primary', pageToken=page_token).execute(http=decorator.http())
+            for event in events['items']:
+                all_events.append({
+                                   'summary' : event.get('summary'),
+                                   'date' : event['start'].get('date'),
+                                   'location' : event.get('location'),
+                                   'id' : event.get('id'),
+                                   })
+            page_token = events.get('nextPageToken')
+            if not page_token:
+                break
+
+        template_values = {'all_events' : all_events[::-1]} #[::-1] reverses list so the date go from most resent at the top
         self.render('main.html', **template_values)
 
 
@@ -146,10 +174,53 @@ class GrantPermission(BaseHandler):
         self.render('grant_permission.html', **template_values)
 
 
+class AddEvent(BaseHandler):
+    @decorator.oauth_aware
+    def get(self):
+        ""
+        template_values = {}
+        self.render('add_event.html', **template_values)
+
+    @decorator.oauth_aware
+    def post(self):
+        ""
+        start_date = self.request.get('date')
+        end_date = start_date[:-1] + str(int(start_date[-1:]) + 1) #increments date by one
+        
+        event = {
+                'summary': self.request.get('summary'),
+                'location': self.request.get('location'),
+                'description': self.request.get('description'),
+                'start': {
+                            'date': start_date
+                            },
+                'end': {
+                            'date': end_date
+                            },
+                }
+        service.events().insert(calendarId='primary', body=event).execute(http=decorator.http())
+        self.redirect('/main')
+
+class RemoveEvent(BaseHandler):
+    @decorator.oauth_aware
+    def get(self):
+        ""
+        id = self.request.get('id')
+        service.events().delete(calendarId='primary', eventId=id).execute(http=decorator.http())
+        self.redirect('/main')
+
+class EditEvent(BaseHandler):
+    @decorator.oauth_aware
+    def get(self):
+        ""
+
 app = webapp2.WSGIApplication([('/', Login),
                                ('/main', Main),
                                ('/logout', Logout),
                                ('/enter_client_secret', ClientSecret),
                                ('/grant_permission', GrantPermission),
+                               ('/add', AddEvent),
+                               ('/edit', EditEvent),
+                               ('/remove', RemoveEvent),
                                (decorator.callback_path, decorator.callback_handler()),
                                ], debug=True)

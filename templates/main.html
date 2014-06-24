@@ -1,9 +1,30 @@
 ﻿{% extends "base.html" %}
 {% block content %}
+<div><a href="/add">Add Event</a></div>
 <div>
-    <a href="/logout">Logout</a>
+    <table>
+        <tr>
+            <td>Date</td>
+            <td>Summary</td>
+            <td>Location</td>
+            <!-- 
+            <td>Edit</td>
+            -->
+            <td>Remove</td>
+        </tr>
+        {% for event in all_events %}
+        <tr>
+            <td>{{ event.date }}</td>
+            <td>{{ event.summary }}</td>
+            <td>{{ event.location }}</td>
+            <!-- 
+            <td><a href="/edit">Edit</a></td>
+            -->
+            <td><a href="/remove?id={{ event.id }}">Remove</a></td>
+        </tr>
+        {% endfor %}
+    </table>
 </div>
-<div>
-   Main
-</div>
+
+
 {% endblock %}
