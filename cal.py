@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
-#Modules for working with app engine
+#Python modules
 import webapp2
 import logging
+import httplib2
 
-#Python modules
+from apiclient import discovery
+from oauth2client import appengine
+from oauth2client import client
+from google.appengine.api import memcache
+
 import os
 import jinja2
 
@@ -21,6 +26,8 @@ def render_str(template, **params):
     """Renders template with parameters"""
     t = jinja_env.get_template(template) 
     return t.render(params)
+
+
 
 
 #REQUEST HANDLERS
@@ -83,6 +90,8 @@ class Main(BaseHandler):
     def get(self):
         if not self.user:
             self.redirect('/')
+        if ClientSecrets.all().count() == 0:
+            self.redirect('/enter_client_secret')
         template_values = {}
         self.render('main.html', **template_values)
 
@@ -92,9 +101,32 @@ class Logout(BaseHandler):
         self.logout()
         self.redirect('/')
 
+class ClientSecret(BaseHandler):
+    def get(self):
+        ""
+        template_values = {}
+        self.render('enter_client_secret.html', **template_values)
 
+    def post(self):
+        ""
+        client_id = self.request.get('client_id')
+        client_secret = self.request.get('client_secret')
+        logging.info(client_id, client_secret)
+        secret = ClientSecrets(client_id = client_id, client_secret = client_secret)
+        secret.put()
+        self.redirect('/grant_permission')
+
+
+class GrantPermission(BaseHandler):
+    def get(self):
+        ""
+
+    def post(self):
+        ""
 
 app = webapp2.WSGIApplication([('/', Login),
                                ('/main', Main),
                                ('/logout', Logout),
+                               ('/enter_client_secret', ClientSecret),
+                               ('/grant_permission', GrantPermission),
                                ], debug=True)

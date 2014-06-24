@@ -16,6 +16,10 @@ class User(db.Model):
         user = User.all().filter('username =', username).get() #get() gražina tik viena objektą, ne sarašąfeatures every image gallery
         return user
 
+class ClientSecrets(db.Model):
+    client_id = db.StringProperty(required = True)
+    client_secret = db.StringProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
 """
 class User(db.Model):
     username = db.StringProperty(required = True)
