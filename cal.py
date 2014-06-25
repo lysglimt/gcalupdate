@@ -48,16 +48,6 @@ decorator = appengine.OAuth2Decorator(
 
 logging.info('#1')
 
-class CalendarEvent:
-    ""
-    date = ''
-    dateTime = ''
-    Time = ''
-    endTimeUnspecified = True
-    summary = ''
-    description = ''
-
-
 #REQUEST HANDLERS
 class BaseHandler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
@@ -125,6 +115,9 @@ class Main(BaseHandler):
             return
         if ClientSecrets.all().count() == 0:
             self.redirect('/enter_client_secret')
+            return
+        if not decorator.has_credentials():
+            self.redirect('/grant_permission')
             return
         logging.info('#3')
         all_events = []
