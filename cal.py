@@ -46,7 +46,6 @@ decorator = appengine.OAuth2Decorator(
       'https://www.googleapis.com/auth/calendar.readonly',
     ])
 
-logging.info('#1')
 
 #REQUEST HANDLERS
 class BaseHandler(webapp2.RequestHandler):
@@ -68,7 +67,7 @@ class BaseHandler(webapp2.RequestHandler):
         cookie_val = make_secure_val(val)
         self.response.headers.add_header('Set-Cookie', '%s=%s' % (name, cookie_val))   
         
-    def read_secure_cookie(self, name):
+    def read_secure_cookie(self, name): #checks validity of cookie
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
@@ -98,18 +97,10 @@ class Login(BaseHandler):
             self.redirect('/main')
         self.render('login.html', error = 'Bad password or username')
 
-    def set_secure_cookie(self, name, val):
-        cookie_val = make_secure_val(val)
-        self.response.headers.add_header('Set-Cookie', '%s=%s' % (name, cookie_val))
-
-    def read_secure_cookie(self, name):                         #checks validity of cookie
-        cookie_val = self.request.cookies.get(name)
-        return cookie_val and check_secure_val(cookie_val)
 
 class Main(BaseHandler):
     @decorator.oauth_aware
     def get(self):
-        logging.info('#2')
         if not self.user:
             self.redirect('/')
             return
@@ -118,12 +109,40 @@ class Main(BaseHandler):
             return
         if not decorator.has_credentials():
             self.redirect('/grant_permission')
-            return
-        logging.info('#3')
+            return      
+
+        calendar_names_and_ids = []
+        calendars = []
+        page_token = None
+        while True:
+            calendar_list = service.calendarList().list(pageToken=page_token).execute(http=decorator.http())
+            for calendar_list_entry in calendar_list['items']:
+                id = calendar_list_entry.get('id')
+                if id != '#contacts@group.v.calendar.google.com':
+                    calendar_names_and_ids.append({                                                     #in future remove duplication of saving the same calendar id information 
+                                               'name' : calendar_list_entry.get('summary'),
+                                               'id' : id,
+                                               })
+                calendars.append(calendar_list_entry.get('id'))
+            page_token = calendar_list.get('nextPageToken')
+            if not page_token:
+                break
+                calendar = self.request.get('calendar')
+        
+        current_cal_id = 'primary'
+        cookie_calendar = self.read_secure_cookie('calendar')
+        selected_calendar = self.request.get('calendar')
+        if cookie_calendar in calendars and cookie_calendar != '':
+            current_cal_id = cookie_calendar
+        if selected_calendar in calendars and selected_calendar != '':
+            current_cal_id = selected_calendar
+            self.set_secure_cookie('calendar', str(selected_calendar))        
+
         all_events = []
         page_token = None
         while True:
-            events = service.events().list(calendarId='primary', pageToken=page_token).execute(http=decorator.http())
+            events = service.events().list(calendarId=current_cal_id, pageToken=page_token).execute(http=decorator.http())
+            calendar_name = events['summary']
             for event in events['items']:
                 all_events.append({
                                    'summary' : event.get('summary'),
@@ -134,8 +153,13 @@ class Main(BaseHandler):
             page_token = events.get('nextPageToken')
             if not page_token:
                 break
+        
 
-        template_values = {'all_events' : all_events[::-1]} #[::-1] reverses list so the date go from most resent at the top
+
+        template_values = {'all_events' : all_events[::-1], #[::-1] reverses list so the date go from most resent at the top
+                           'calendar_names_and_ids' : calendar_names_and_ids,
+                           'calendar_name' : calendar_name,
+                           } 
         self.render('main.html', **template_values)
 
 
@@ -184,8 +208,9 @@ class AddEvent(BaseHandler):
     def post(self):
         ""
         start_date = self.request.get('date')
-        end_date = start_date[:-1] + str(int(start_date[-1:]) + 1) #increments date by one
-        
+        end_date = start_date[:-1] + str(int(start_date[-1:]) + 1) #increments date by one        
+        calendar = self.read_secure_cookie('calendar')
+
         event = {
                 'summary': self.request.get('summary'),
                 'location': self.request.get('location'),
@@ -197,7 +222,7 @@ class AddEvent(BaseHandler):
                             'date': end_date
                             },
                 }
-        service.events().insert(calendarId='primary', body=event).execute(http=decorator.http())
+        service.events().insert(calendarId=calendar, body=event).execute(http=decorator.http())
         self.redirect('/main')
 
 class RemoveEvent(BaseHandler):
@@ -205,7 +230,9 @@ class RemoveEvent(BaseHandler):
     def get(self):
         ""
         id = self.request.get('id')
-        service.events().delete(calendarId='primary', eventId=id).execute(http=decorator.http())
+        calendar = self.read_secure_cookie('calendar')
+
+        service.events().delete(calendarId=calendar, eventId=id).execute(http=decorator.http())
         self.redirect('/main')
 
 class EditEvent(BaseHandler):

@@ -1,6 +1,17 @@
 ﻿{% extends "base.html" %}
 {% block content %}
 <div><a href="/add">Add Event</a></div>
+<form>
+    <select name="menu" onchange="top.location.href=this.options[this.selectedIndex].value;" value="GO">
+        <option value="/main"> Current </option>
+        {% for calendar in calendar_names_and_ids %}
+        <option value="/main?calendar={{calendar.id}}">{{ calendar.name }}</option>
+        {% endfor %}
+    </select>
+</form>
+<div>
+    <h1>Current calendar {{calendar_name}}</h1>
+</div>
 <div>
     <table>
         <tr>
