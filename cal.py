@@ -67,6 +67,8 @@ class BaseHandler(webapp2.RequestHandler):
 
     """Other handles inherit methods from this handler"""
     def render(self, template, **kw):
+        if self.user:
+            kw['logged_in'] = True
         self.response.out.write(render_str(template, **kw))
 
     def login(self, user):
