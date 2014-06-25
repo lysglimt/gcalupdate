@@ -27,6 +27,8 @@ def render_str(template, **params):
     t = jinja_env.get_template(template) 
     return t.render(params)
 
+logging.info('#0')
+
 client_id=''
 client_secret=''
 if ClientSecrets.all().count() != 0:
@@ -43,9 +45,8 @@ decorator = appengine.OAuth2Decorator(
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/calendar.readonly',
     ])
-logging.warning(dir(decorator.set_credentials))
 
-
+logging.info('#1')
 
 class CalendarEvent:
     ""
@@ -116,11 +117,14 @@ class Login(BaseHandler):
 class Main(BaseHandler):
     @decorator.oauth_aware
     def get(self):
+        logging.info('#2')
         if not self.user:
             self.redirect('/')
+            return
         if ClientSecrets.all().count() == 0:
             self.redirect('/enter_client_secret')
-
+            return
+        logging.info('#3')
         all_events = []
         page_token = None
         while True:
@@ -224,3 +228,14 @@ app = webapp2.WSGIApplication([('/', Login),
                                ('/remove', RemoveEvent),
                                (decorator.callback_path, decorator.callback_handler()),
                                ], debug=True)
+
+#Only needed for logging.debug() to show up in logs
+def main():
+    # Set the logging level in the main function
+    # See the section on Requests and App Caching for information on how
+    # App Engine reuses your request handlers when you specify a main function
+    logging.getLogger().setLevel(logging.DEBUG)
+    webapp.util.run_wsgi_app(application)
+
+if __name__ == '__main__':
+    main()
