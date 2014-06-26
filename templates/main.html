@@ -13,9 +13,16 @@
     <h1>Current calendar {{calendar_name}}</h1>
 </div>
 <div>
+    <h4>
+        Times are displayed in UTC(+01:00)
+    </h4>
+</div>
+<div>
     <table>
         <tr>
-            <td>Date</td>
+            <td>Start</td>
+            <td>End</td>
+            <td>Time Zone</td>
             <td>Summary</td>
             <td>Location</td>
             <!-- 
@@ -25,7 +32,9 @@
         </tr>
         {% for event in all_events %}
         <tr>
-            <td>{{ event.date }}</td>
+            <td>{{ event.start_time }}</td>
+            <td>{{ event.end_time }}</td>
+            <td>{{ event.time_zone }}</td>
             <td>{{ event.summary }}</td>
             <td>{{ event.location }}</td>
             <!-- 

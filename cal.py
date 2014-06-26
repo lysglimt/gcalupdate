@@ -5,6 +5,7 @@
 import webapp2
 import logging
 import httplib2
+import sys
 
 from apiclient import discovery
 from oauth2client import appengine
@@ -27,7 +28,6 @@ def render_str(template, **params):
     t = jinja_env.get_template(template) 
     return t.render(params)
 
-logging.info('#0')
 
 client_id=''
 client_secret=''
@@ -140,13 +140,22 @@ class Main(BaseHandler):
 
         all_events = []
         page_token = None
-        while True:
-            events = service.events().list(calendarId=current_cal_id, pageToken=page_token).execute(http=decorator.http())
+        while True:            
+            events = service.events().list(calendarId=current_cal_id, pageToken=page_token, timeZone='Europe/Oslo').execute(http=decorator.http())
             calendar_name = events['summary']
             for event in events['items']:
+                start_time = event['start'].get('dateTime')
+                end_time = event['end'].get('dateTime')
+                if start_time and end_time:                    
+                    start_time = start_time[:-9]
+                    end_time = end_time[:-9]
                 all_events.append({
                                    'summary' : event.get('summary'),
-                                   'date' : event['start'].get('date'),
+                                   'start_date' : event['start'].get('date'),
+                                   'start_time' : start_time,
+                                   'time_zone' : event['start'].get('timeZone'),
+                                   'end_date' : event['end'].get('date'),
+                                   'end_time' : end_time,
                                    'location' : event.get('location'),
                                    'id' : event.get('id'),
                                    })
@@ -207,22 +216,57 @@ class AddEvent(BaseHandler):
     @decorator.oauth_aware
     def post(self):
         ""
-        start_date = self.request.get('date')
-        end_date = start_date[:-1] + str(int(start_date[-1:]) + 1) #increments date by one        
         calendar = self.read_secure_cookie('calendar')
 
+        errors = []
+
+        start_date = self.request.get('startdate')
+        end_date = self.request.get('enddate')
+        start_time = self.request.get('starttime')
+        end_time = self.request.get('endtime')
+        time_zone_and_utc_offset = self.request.get('timezone')
+        summary = self.request.get('summary')
+        location = self.request.get('location')
+        description = self.request.get('description')
+        logging.error(time_zone_and_utc_offset)
+        time_zone, utc_offset = time_zone_and_utc_offset.split(',')
+
         event = {
-                'summary': self.request.get('summary'),
-                'location': self.request.get('location'),
-                'description': self.request.get('description'),
-                'start': {
-                            'date': start_date
-                            },
-                'end': {
-                            'date': end_date
-                            },
+                'summary': summary,
+                'location': location,
+                'description': description,
                 }
-        service.events().insert(calendarId=calendar, body=event).execute(http=decorator.http())
+
+        if start_time and end_time :
+            event['start'] = {
+                              'dateTime' : start_date + 'T' + start_time + ':00',
+                              'timeZone' : time_zone,  
+                              }
+            event['end'] = {
+                            'dateTime' : end_date + 'T' + end_time + ':00',
+                            'timeZone' : time_zone,
+                            }
+        else:
+            event['start'] = {'date' : start_date}
+            event['end'] = {'date' : end_date}
+        try:
+            service.events().insert(calendarId=calendar, body=event).execute(http=decorator.http())
+        except:
+            logging.error(sys.exc_info()[0])
+            errors.append('Check your input data')
+            template_values = {
+                               'errors' : errors,
+                               'start_date' : start_date,
+                               'end_date' : end_date,
+                               'start_time' : start_time,
+                               'end_time' : end_time,
+                               'time_zone' : time_zone,
+                               'summary': summary,
+                               'location': location,
+                               'description': description,
+                               }
+            self.render('add_event.html', **template_values)
+            return
         self.redirect('/main')
 
 class RemoveEvent(BaseHandler):
