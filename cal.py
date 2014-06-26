@@ -130,6 +130,9 @@ class Main(BaseHandler):
                 calendar = self.request.get('calendar')
         
         current_cal_id = 'primary'
+        if not self.read_secure_cookie('calendar'):
+            logging.info('Setting Calendar cookie for first time')
+            self.set_secure_cookie('calendar', str(current_cal_id))
         cookie_calendar = self.read_secure_cookie('calendar')
         selected_calendar = self.request.get('calendar')
         if cookie_calendar in calendars and cookie_calendar != '':
@@ -252,7 +255,7 @@ class AddEvent(BaseHandler):
         try:
             service.events().insert(calendarId=calendar, body=event).execute(http=decorator.http())
         except:
-            logging.error(sys.exc_info()[0])
+            logging.error(sys.exc_info()[1])
             errors.append('Check your input data')
             template_values = {
                                'errors' : errors,
