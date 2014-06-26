@@ -164,9 +164,7 @@ class Main(BaseHandler):
                                    })
             page_token = events.get('nextPageToken')
             if not page_token:
-                break
-        
-
+                break     
 
         template_values = {'all_events' : all_events[::-1], #[::-1] reverses list so the date go from most resent at the top
                            'calendar_names_and_ids' : calendar_names_and_ids,
