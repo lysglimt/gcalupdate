@@ -265,6 +265,7 @@ class AddEvent(BaseHandler):
                                'location': location,
                                'description': description,
                                }
+            logging.info('Problematic template values: ' + str(template_values))
             self.render('add_event.html', **template_values)
             return
         self.redirect('/main')
