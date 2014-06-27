@@ -236,7 +236,6 @@ class AddEvent(BaseHandler):
         summary = self.request.get('summary')
         location = self.request.get('location')
         description = self.request.get('description')
-        logging.error(time_zone_and_utc_offset)
         time_zone, utc_offset = time_zone_and_utc_offset.split(',')
 
         event = {
@@ -307,9 +306,9 @@ class EditEvent(BaseHandler):
         else:
              start_date = event['start'].get('date')
              end_date = event['end'].get('date')
-
         template_values = {
                             'summary' : event.get('summary'),
+                            'description' : event.get('description'),
                             'start_date' : start_date,
                             'start_time' : start_time,
                             'time_zone' : event['start'].get('timeZone'),
@@ -317,6 +316,7 @@ class EditEvent(BaseHandler):
                             'end_time' : end_time,
                             'location' : event.get('location'),
                             'id' : event.get('id'),
+                            'sequence' : event.get('sequence')
                             }
 
         self.render('event_editor.html', **template_values)
@@ -336,14 +336,17 @@ class EditEvent(BaseHandler):
         summary = self.request.get('summary')
         location = self.request.get('location')
         description = self.request.get('description')
-        event_id = self.request.get('id')
+        event_id = self.request.get('id')        
         logging.error(time_zone_and_utc_offset)
         time_zone, utc_offset = time_zone_and_utc_offset.split(',')
+
+        incrimented_sequence = str(int(self.request.get('sequence')) + 1)
 
         event = {
                 'summary': summary,
                 'location': location,
                 'description': description,
+                'sequence': incrimented_sequence,
                 }
 
         if start_time and end_time :
@@ -373,6 +376,7 @@ class EditEvent(BaseHandler):
                                'summary': summary,
                                'location': location,
                                'description': description,
+                               'sequence': incrimented_sequence,
                                }
             logging.info('Problematic template values: ' + str(template_values))
             self.render('event_editor.html', **template_values)
