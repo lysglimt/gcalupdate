@@ -117,7 +117,12 @@ class Main(BaseHandler):
         calendars = []
         page_token = None
         while True:
-            calendar_list = service.calendarList().list(pageToken=page_token).execute(http=decorator.http())
+            try: #Quick fix for invalid_grant
+                calendar_list = service.calendarList().list(pageToken=page_token).execute(http=decorator.http())
+            except AccessTokenRefreshError:
+                logging.error('Problem getting calendar list. Redirecting to permission grant page. Error: AccessTokenRefreshError')
+                self.redirect('/grant_permission')                
+                return
             for calendar_list_entry in calendar_list['items']:
                 id = calendar_list_entry.get('id')
                 if id != '#contacts@group.v.calendar.google.com':
