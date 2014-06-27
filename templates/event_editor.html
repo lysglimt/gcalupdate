@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <div>
+        Enter New Event
+    </div>
+    <form method="post">
+        <div>
+            <div>
+                <div class="label">
+                    <h3>
+                        Start Date
+                    </h3>
+                </div>
+                <div class="label">
+                    Date. Format YYYY-MM-DD e.g. 2015-01-29
+                </div>
+                <div>
+                  <input type="text" name="startdate" value="{{ start_date }}">
+                </div>
+                <div class="label">
+                    Time. Format HH:MM e.g. 22:59. Leave blank for all day events
+                </div>
+                <div>
+                    <input type="text" name="starttime" value="{{ start_time }}"></input>
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    <h3>
+                        End Date
+                    </h3>
+                </div>
+                <div class="label">
+                    Date. Format YYYY-MM-DD e.g. 2015-01-30
+                </div>
+                <div>
+                    <input type="text" name="enddate" value="{{ end_date }}"></input>
+                </div>
+                <div class="label">
+                    Time. Format HH:MM e.g. 22:59. Leave blank for all day events
+                </div>
+                <div>
+                    <input type="text" name="endtime" value="{{ end_time }}"></input>
+                </div>
+                <div class="label">
+                    <h3>
+                        Timezone
+                    </h3>
+                </div>
+                <div>
+                    <select name="timezone">
+                        <option value="Europe/Oslo,01:00"> Oslo, Norway (UTC+01:00) </option>
+                        <option value="Europe/Vilnius,02:00"> Vilnius, Lithuania (UTC+02:00) </option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    <h3>
+                        Summary
+                    </h3>
+                </div>
+                <div>
+                    <input type="text" name="summary" value="{{ summary }}"></input>
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    <h3>
+                        Description
+                    </h3>
+                </div>
+                <div>
+                    <textarea name="description" cols="25" rows="7">{{ Description }}</textarea> 
+                </div>
+            </div>
+            <div>
+                <div class="label">
+                    <h3>
+                        Location
+                    </h3>
+                </div>
+                <div>
+                    <input type="text" name="location" value="{{ location }}"></input>
+                    <p> e.g. Oslo, Norway</p>
+                </div>
+            </div>
+            <div>
+                {% for error in errors %}
+                    {{error}}
+                {% endfor %}
+                
+            </div>
+            {% if id is defined %}
+            <input type="hidden" name="id" value="{{ id }}" />
+            {% endif %}
+            <div>
+                <div>
+                    <input type="submit" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

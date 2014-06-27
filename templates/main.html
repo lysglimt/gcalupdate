@@ -37,9 +37,7 @@
             <td>{{ event.time_zone }}</td>
             <td>{{ event.summary }}</td>
             <td>{{ event.location }}</td>
-            <!-- 
-            <td><a href="/edit">Edit</a></td>
-            -->
+            <td><a href="/edit?id={{ event.id }}">Edit</a></td>
             <td><a href="/remove?id={{ event.id }}">Remove</a></td>
         </tr>
         {% endfor %}

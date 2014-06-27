@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-
+"""
+When calling Calendar API - send correct timezone
+"""
 #Python modules
 import webapp2
 import logging
@@ -212,7 +214,7 @@ class AddEvent(BaseHandler):
     def get(self):
         ""
         template_values = {}
-        self.render('add_event.html', **template_values)
+        self.render('event_editor.html', **template_values)
 
     @decorator.oauth_aware
     def post(self):
@@ -267,7 +269,7 @@ class AddEvent(BaseHandler):
                                'description': description,
                                }
             logging.info('Problematic template values: ' + str(template_values))
-            self.render('add_event.html', **template_values)
+            self.render('event_editor.html', **template_values)
             return
         self.redirect('/main')
 
@@ -285,6 +287,92 @@ class EditEvent(BaseHandler):
     @decorator.oauth_aware
     def get(self):
         ""
+        event_id = self.request.get('id')
+        calendar_id = self.read_secure_cookie('calendar')
+
+        event = service.events().get(calendarId=calendar_id, eventId=event_id, timeZone='Europe/Oslo').execute(http=decorator.http())
+
+        start_time = event['start'].get('dateTime')
+        end_time = event['end'].get('dateTime')
+        if start_time and end_time:
+            start_date = start_time[:10]
+            end_date = end_time[:10]                    
+            start_time = start_time[11:-9]
+            end_time = end_time[11:-9]
+        else:
+             start_date = event['start'].get('date')
+             end_date = event['end'].get('date')
+
+        template_values = {
+                            'summary' : event.get('summary'),
+                            'start_date' : start_date,
+                            'start_time' : start_time,
+                            'time_zone' : event['start'].get('timeZone'),
+                            'end_date' : end_date,
+                            'end_time' : end_time,
+                            'location' : event.get('location'),
+                            'id' : event.get('id'),
+                            }
+
+        self.render('event_editor.html', **template_values)
+
+    @decorator.oauth_aware
+    def post(self):
+        ""
+        calendar = self.read_secure_cookie('calendar')
+
+        errors = []
+
+        start_date = self.request.get('startdate')
+        end_date = self.request.get('enddate')
+        start_time = self.request.get('starttime')
+        end_time = self.request.get('endtime')
+        time_zone_and_utc_offset = self.request.get('timezone')
+        summary = self.request.get('summary')
+        location = self.request.get('location')
+        description = self.request.get('description')
+        event_id = self.request.get('id')
+        logging.error(time_zone_and_utc_offset)
+        time_zone, utc_offset = time_zone_and_utc_offset.split(',')
+
+        event = {
+                'summary': summary,
+                'location': location,
+                'description': description,
+                }
+
+        if start_time and end_time :
+            event['start'] = {
+                              'dateTime' : start_date + 'T' + start_time + ':00',
+                              'timeZone' : time_zone,  
+                              }
+            event['end'] = {
+                            'dateTime' : end_date + 'T' + end_time + ':00',
+                            'timeZone' : time_zone,
+                            }
+        else:
+            event['start'] = {'date' : start_date}
+            event['end'] = {'date' : end_date}
+        try:
+            service.events().update(calendarId=calendar, eventId=event_id, body=event).execute(http=decorator.http())
+        except:
+            logging.error(sys.exc_info()[1])
+            errors.append('Check your input data')
+            template_values = {
+                               'errors' : errors,
+                               'start_date' : start_date,
+                               'end_date' : end_date,
+                               'start_time' : start_time,
+                               'end_time' : end_time,
+                               'time_zone' : time_zone,
+                               'summary': summary,
+                               'location': location,
+                               'description': description,
+                               }
+            logging.info('Problematic template values: ' + str(template_values))
+            self.render('event_editor.html', **template_values)
+            return
+        self.redirect('/main')
 
 app = webapp2.WSGIApplication([('/', Login),
                                ('/main', Main),
