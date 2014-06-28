@@ -115,6 +115,7 @@ class Main(BaseHandler):
 
         calendar_names_and_ids = []
         calendars = []
+        template_values = {}
         page_token = None
         while True:
             try: #Quick fix for invalid_grant
@@ -156,10 +157,10 @@ class Main(BaseHandler):
         calendar_start_date = self.request.get('start')
         calendar_end_date = self.request.get('end')
         if calendar_start_date:
-            calendar_start_date = calendar_start_date.replace('/', '-')
+            template_values['start'] = calendar_start_date
             query_params['timeMin'] = calendar_start_date + 'T00:00:00.00Z'
         if calendar_end_date:
-            calendar_end_date = calendar_end_date.replace('/', '-')
+            template_values['end'] = calendar_end_date
             query_params['timeMax'] = calendar_end_date + 'T00:00:00.00Z'
         all_events = []
         query_params['pageToken'] = None
@@ -189,10 +190,10 @@ class Main(BaseHandler):
             if not page_token:
                 break     
 
-        template_values = {'all_events' : all_events[::-1], #[::-1] reverses list so the date go from most resent at the top
+        template_values.update({'all_events' : all_events[::-1], #[::-1] reverses list so the date go from most resent at the top
                            'calendar_names_and_ids' : calendar_names_and_ids,
                            'calendar_name' : calendar_name,
-                           } 
+                           })
         self.render('main.html', **template_values)
 
 

@@ -16,11 +16,12 @@
     <form class="form-inline panel panel-default">
         <div class="panel-heading">Search</div>
         <div class="panel-body">
+            <div>Date range</div>
             <div class="form-group" id="datapicker">
                 <div class="input-daterange input-group" id="datepicker">
-                    <input type="text" class="input-sm form-control" name="start" />
+                    <input type="text" class="input-sm form-control" name="start" value="{{start}}"/>
                     <span class="input-group-addon">to</span>
-                    <input type="text" class="input-sm form-control" name="end" />
+                    <input type="text" class="input-sm form-control" name="end" value="{{end}}"/>
                 </div>
             </div>
             <button type="submit" class="btn btn-default">Search</button>
@@ -60,8 +61,10 @@
 </div>
 <script>
     $('#datapicker .input-daterange').datepicker({
-        format: "yyyy/mm/dd",
-        todayHighlight: true
+        format: "yyyy-mm-dd",
+        todayHighlight: true,
+        todayBtn: "linked",
+        keyboardNavigation: false
     });
 </script>
 {% endblock %}
