@@ -159,11 +159,14 @@ class Main(BaseHandler):
                 if start_time and end_time:                    
                     start_time = start_time[:-9]
                     end_time = end_time[:-9]
+                else:
+                    start_time = event['start'].get('date')
+                    end_time = event['end'].get('date')
                 all_events.append({
                                    'summary' : event.get('summary'),
                                    'start_date' : event['start'].get('date'),
                                    'start_time' : start_time,
-                                   'time_zone' : event['start'].get('timeZone'),
+                                   'time_zone' : event['start'].get('timeZone') or '',
                                    'end_date' : event['end'].get('date'),
                                    'end_time' : end_time,
                                    'location' : event.get('location'),
