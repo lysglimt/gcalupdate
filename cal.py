@@ -232,11 +232,10 @@ class AddEvent(BaseHandler):
         end_date = self.request.get('enddate')
         start_time = self.request.get('starttime')
         end_time = self.request.get('endtime')
-        time_zone_and_utc_offset = self.request.get('timezone')
+        time_zone = self.request.get('timezone')
         summary = self.request.get('summary')
         location = self.request.get('location')
         description = self.request.get('description')
-        time_zone, utc_offset = time_zone_and_utc_offset.split(',')
 
         event = {
                 'summary': summary,
@@ -332,13 +331,11 @@ class EditEvent(BaseHandler):
         end_date = self.request.get('enddate')
         start_time = self.request.get('starttime')
         end_time = self.request.get('endtime')
-        time_zone_and_utc_offset = self.request.get('timezone')
+        time_zone = self.request.get('timezone')
         summary = self.request.get('summary')
         location = self.request.get('location')
         description = self.request.get('description')
         event_id = self.request.get('id')        
-        logging.error(time_zone_and_utc_offset)
-        time_zone, utc_offset = time_zone_and_utc_offset.split(',')
 
         incrimented_sequence = str(int(self.request.get('sequence')) + 1)
 
