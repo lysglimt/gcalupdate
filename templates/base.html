@@ -7,20 +7,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="/css/style.css" />
-</head>
-<body>
-    <div>
-        {% if logged_in %}       
-        <a href="/main">Events</a> 
-        <a href="/logout">Logout</a>        
-        {% endif %}
-    </div>
-    <div>
-        {% block content %}
-        {% endblock %}
-    </div>
+    <link href="css/datepicker3.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/style.css">
+
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-datepicker.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div>
+            {% if logged_in %}
+            <a href="/main"><button type="button" class="btn btn-default">Events</button></a>
+            <a href="/logout"><button class="btn btn-default">Logout</button></a>
+            {% endif %}
+        </div>
+        <div>
+            {% block content %}
+            {% endblock %}
+        </div>
+
+    </div>
 </body>
 </html>

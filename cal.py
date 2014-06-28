@@ -148,10 +148,23 @@ class Main(BaseHandler):
             current_cal_id = selected_calendar
             self.set_secure_cookie('calendar', str(selected_calendar))        
 
+        query_params = {
+                        'calendarId' : current_cal_id,
+                        'timeZone' : 'Europe/Oslo',
+                        'calendarId' : current_cal_id,
+                        }
+        calendar_start_date = self.request.get('start')
+        calendar_end_date = self.request.get('end')
+        if calendar_start_date:
+            calendar_start_date = calendar_start_date.replace('/', '-')
+            query_params['timeMin'] = calendar_start_date + 'T00:00:00.00Z'
+        if calendar_end_date:
+            calendar_end_date = calendar_end_date.replace('/', '-')
+            query_params['timeMax'] = calendar_end_date + 'T00:00:00.00Z'
         all_events = []
-        page_token = None
+        query_params['pageToken'] = None
         while True:            
-            events = service.events().list(calendarId=current_cal_id, pageToken=page_token, timeZone='Europe/Oslo').execute(http=decorator.http())
+            events = service.events().list(**query_params).execute(http=decorator.http())
             calendar_name = events['summary']
             for event in events['items']:
                 start_time = event['start'].get('dateTime')
@@ -312,10 +325,10 @@ class EditEvent(BaseHandler):
                             'summary' : event.get('summary'),
                             'description' : event.get('description'),
                             'start_date' : start_date,
-                            'start_time' : start_time,
-                            'time_zone' : event['start'].get('timeZone'),
+                            'start_time' : start_time or '',
+                            'time_zone' : event['start'].get('timeZone') or '',
                             'end_date' : end_date,
-                            'end_time' : end_time,
+                            'end_time' : end_time or '',
                             'location' : event.get('location'),
                             'id' : event.get('id'),
                             'sequence' : event.get('sequence')
