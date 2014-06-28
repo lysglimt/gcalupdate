@@ -119,7 +119,7 @@ class Main(BaseHandler):
         while True:
             try: #Quick fix for invalid_grant
                 calendar_list = service.calendarList().list(pageToken=page_token).execute(http=decorator.http())
-            except AccessTokenRefreshError:
+            except client.AccessTokenRefreshError:
                 logging.error('Problem getting calendar list. Redirecting to permission grant page. Error: AccessTokenRefreshError')
                 self.redirect('/grant_permission')                
                 return
