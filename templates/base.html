@@ -1,20 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
-<head>
-    <link type="text/css" rel="stylesheet" href="/css/style.css" />
+<head>    
     <title>Google Calendar Updater</title>
     <meta charset='utf-8'> 
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/datepicker3.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="/css/style.css">
+
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-datepicker.js"></script>
 </head>
 <body>
-    <div>
-        {% if logged_in %}        
-        <a href="/logout">Logout</a>
-        <a href="/main">Events</a>
-        {% endif %}
-    </div>
-    <div>
-        {% block content %}
-        {% endblock %}
+    <div class="container">
+        <div>
+            {% if logged_in %}
+            <a href="/main"><button type="button" class="btn btn-default">Events</button></a>
+            <a href="/logout"><button class="btn btn-default">Logout</button></a>
+            {% endif %}
+        </div>
+        <div>
+            {% block content %}
+            {% endblock %}
+        </div>
+
     </div>
 </body>
 </html>
